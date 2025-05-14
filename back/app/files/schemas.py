@@ -1,6 +1,4 @@
-# ============================================================
-# schemas.py
-# ============================================================
+# app/files/schemas.py (updated)
 from pydantic import BaseModel, constr
 from typing import List
 import datetime as _dt
@@ -25,6 +23,7 @@ class FileResponse(BaseModel):
     download_count: int
     purchase_count: int
     upload_date: _dt.datetime
+    preview_url: str  # URL for preview image or placeholder
 
 
 class SignedUrlResponse(BaseModel):

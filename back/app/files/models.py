@@ -18,7 +18,7 @@ class File(Document):
     file_key: str  # S3 object key
     file_type: str  # mime or enum
     title: str
-    description: str
+    description: str | None = None
     tags: List[str] = []
     price: int = 0  # points
     upload_date: _dt.datetime = Field(default_factory=_dt.datetime.utcnow)
