@@ -5,6 +5,7 @@ from app.core.storage import upload_fileobj, create_signed_url
 from .models import File
 from .schemas import FileUploadRequest
 from app.file_purchase.models import FilePurchaseTransaction
+from typing import List, Optional
 
 
 class FileService:
@@ -33,11 +34,19 @@ class FileService:
         return doc
 
     @staticmethod
-    async def list_files(filters: list[str] | None = None) -> list[File]:
+    async def list_files(
+            filters: Optional[List[str]] = None,
+            file_type: Optional[str] = None
+    ) -> List[File]:
+        query: dict = {}
         if filters:
-            cursor = File.find({"tags": {"$all": filters}})
-        else:
-            cursor = File.find()
+            query["tags"] = {"$all": filters}
+        if file_type:
+            query["file_type"] = file_type
+
+        cursor = File.find(query)
+        return await cursor.to_list()
+
         return await cursor.to_list()
 
     @staticmethod

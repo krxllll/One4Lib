@@ -1,11 +1,13 @@
 # app/files/router.py (updated)
-from fastapi import APIRouter, Depends, UploadFile, File as FUpload, Form, HTTPException, status
+from fastapi import APIRouter, Depends, UploadFile, File as FUpload, Form, HTTPException, status, Query
 from app.core.deps import get_current_user
 from .schemas import FileUploadRequest, FileResponse, SignedUrlResponse
 from .service import FileService
 from app.account.models import User
 from app.core.storage import create_signed_url
 import json
+from typing import List, Optional
+
 
 router = APIRouter(tags=["files"])
 
@@ -26,8 +28,19 @@ async def upload_file(
     return file_id
 
 @router.get("/", response_model=list[FileResponse])
-async def list_files(tags: list[str] | None = None):
-    docs = await FileService.list_files(tags)
+async def list_files(
+    tags: Optional[List[str]] = Query(
+        None,
+        title="Filter by tags",
+        description="Return only files that have _all_ these tags. Repeat ?tags=…",
+    ),
+    file_type: Optional[str] = Query(
+        None,
+        title="Filter by MIME type",
+        description="Return only files matching this file_type, e.g. 'image/png'",
+    )
+):
+    docs = await FileService.list_files(filters=tags, file_type=file_type)
     results: list[FileResponse] = []
     for doc in docs:
         # For now, preview is the signed URL of the original file
