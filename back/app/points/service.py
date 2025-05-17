@@ -2,13 +2,14 @@ from fastapi import HTTPException, status
 from bson import ObjectId
 
 from app.account.models import User
-from app.files.models import File
 from app.points.models import PointPurchaseTransaction, PointRewardTransaction
 from app.points.schemas import PurchaseRequest, TransactionPublic
+from datetime import datetime
 
 
 class PointsService:
     REWARD_ON_UPLOAD = 4
+    BASE_COMMISSION_RATE = 10  # відсотків
 
     @staticmethod
     async def add_points_for_upload(user_id: str, file_id: str) -> None:
@@ -24,6 +25,42 @@ class PointsService:
             file_id=ObjectId(file_id),
             amount=PointsService.REWARD_ON_UPLOAD,
             reason="upload_reward",
+        )
+        await tx.insert()
+
+    @classmethod
+    async def distribute_commission(
+            cls,
+            author_id: str,
+            file_id: str,
+            total_price: int,
+    ) -> None:
+        aid = ObjectId(author_id)
+        fid = ObjectId(file_id)
+
+        # 1) Перевіряємо, що автор існує
+        author = await User.get(aid)
+        if not author:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Author not found"
+            )
+
+        # 2) Розраховуємо суму комісії
+        commission_amount = (total_price * cls.BASE_COMMISSION_RATE) // 100
+        if commission_amount <= 0:
+            return
+
+        # 3) Нараховуємо поінти автору
+        await author.update({'$inc': {'points': commission_amount}})
+
+        # 4) Логування транзакції комісії
+        tx = PointRewardTransaction(
+            user_id=aid,
+            file_id=fid,
+            amount=commission_amount,
+            reason="author_commission",
+            created_at=datetime.utcnow(),
         )
         await tx.insert()
 

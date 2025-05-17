@@ -1,13 +1,12 @@
-# app/files/router.py (updated)
-from fastapi import APIRouter, Depends, UploadFile, File as FUpload, Form, HTTPException, status, Query
-from app.core.deps import get_current_user
+# app/files/router.py
+from typing import Optional, List
+from fastapi import APIRouter, Depends, Query, UploadFile, File as FUpload, Form, HTTPException, status
+import json
+
+from app.core.deps import get_current_user_optional
 from .schemas import FileUploadRequest, FileResponse, SignedUrlResponse
 from .service import FileService
 from app.account.models import User
-from app.core.storage import create_signed_url
-import json
-from typing import List, Optional
-
 
 router = APIRouter(tags=["files"])
 
@@ -15,8 +14,10 @@ router = APIRouter(tags=["files"])
 async def upload_file(
     meta: str = Form(...),
     raw_file: UploadFile = FUpload(...),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user_optional),
 ):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     try:
         meta_obj = FileUploadRequest(**json.loads(meta))
     except Exception as e:
@@ -24,70 +25,21 @@ async def upload_file(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid meta JSON: {e}"
         )
-    file_id = await FileService.upload(str(current_user.id), meta_obj, raw_file)
-    return file_id
+    return await FileService.upload(str(current_user.id), meta_obj, raw_file)
 
 @router.get("/", response_model=list[FileResponse])
 async def list_files(
-    tags: Optional[List[str]] = Query(
-        None,
-        title="Filter by tags",
-        description="Return only files that have _all_ these tags. Repeat ?tags=…",
-    ),
-    file_type: Optional[str] = Query(
-        None,
-        title="Filter by MIME type",
-        description="Return only files matching this file_type, e.g. 'image/png'",
-    )
+    tags: Optional[List[str]] = Query(None),
+    file_type: Optional[str] = Query(None),
+    current_user=Depends(get_current_user_optional)
 ):
-    docs = await FileService.list_files(filters=tags, file_type=file_type)
-    results: list[FileResponse] = []
-    for doc in docs:
-        # For now, preview is the signed URL of the original file
-        preview = create_signed_url(doc.file_key)
-        results.append(
-            FileResponse(
-                id=str(doc.id),
-                author_id=str(doc.author_id),
-                title=doc.title,
-                description=doc.description,
-                file_type=doc.file_type,
-                price=doc.price,
-                tags=doc.tags,
-                download_count=doc.download_count,
-                purchase_count=doc.purchase_count,
-                upload_date=doc.upload_date,
-                preview_url=preview,
-            )
-        )
-    return results
+    user_id = str(current_user.id) if current_user else None
+    return await FileService.list_files(user_id=user_id, filters=tags, file_type=file_type)
 
 @router.get("/{file_id}", response_model=FileResponse)
-async def get_file(file_id: str):
-    doc = await FileService.get_file(file_id)
-    # For now, preview is the signed URL of the original file
-    preview = create_signed_url(doc.file_key)
-    return FileResponse(
-        id=str(doc.id),
-        author_id=str(doc.author_id),
-        title=doc.title,
-        description=doc.description,
-        file_type=doc.file_type,
-        price=doc.price,
-        tags=doc.tags,
-        download_count=doc.download_count,
-        purchase_count=doc.purchase_count,
-        upload_date=doc.upload_date,
-        preview_url=preview,
-    )
-
-@router.get("/{file_id}/download", response_model=SignedUrlResponse)
-async def download_file(
+async def get_file(
     file_id: str,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user_optional)
 ):
-    url = await FileService.generate_download_url(
-        user_id=str(current_user.id),
-        file_id=file_id
-    )
-    return SignedUrlResponse(url=url)
+    user_id = str(current_user.id) if current_user else None
+    return await FileService.get_file_detail(user_id=user_id, file_id=file_id)

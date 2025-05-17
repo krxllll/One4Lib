@@ -12,9 +12,7 @@ class RatingService:
         uid = ObjectId(user_id)
         fid = ObjectId(file_id)
         now = _dt.datetime.utcnow()
-        existing = await Rating.find_one(
-            (Rating.user_id == uid) & (Rating.file_id == fid)
-        )
+        existing = await Rating.find_one({"user_id": uid, "file_id": fid})
         if existing:
             # оновлюємо значення та час
             await existing.update({'$set': {'value': value, 'created_at': now}})
@@ -35,7 +33,5 @@ class RatingService:
     async def get_user_rating_for_file(user_id: str, file_id: str) -> int:
         uid = ObjectId(user_id)
         fid = ObjectId(file_id)
-        r = await Rating.find_one(
-            (Rating.user_id == uid) & (Rating.file_id == fid)
-        )
+        r = await Rating.find_one({"user_id": uid, "file_id": fid})
         return r.value if r else 0

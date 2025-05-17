@@ -22,7 +22,6 @@ class File(Document):
     tags: List[str] = []
     price: int = 0  # points
     upload_date: _dt.datetime = Field(default_factory=_dt.datetime.utcnow)
-    download_count: int = 0
     purchase_count: int = 0
 
     class Settings:

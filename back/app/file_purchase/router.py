@@ -1,10 +1,9 @@
 # app/file_purchase/router.py
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Response
 from app.core.deps import get_current_user
 from .schemas import PurchaseFileRequest, TransactionResponse, BoughtFilesResponse
 from .service import FilePurchaseService
 from app.account.models import User
-from fastapi.responses import JSONResponse
 
 router = APIRouter(tags=["purchase"])
 
@@ -21,26 +20,13 @@ async def purchase_file(
         user_id=str(current_user.id),
         file_id=req.file_id,
     )
-    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get("/transactions/user", response_model=list[TransactionResponse])
 async def user_transactions(
     current_user: User = Depends(get_current_user),
 ):
     txs = await FilePurchaseService.get_all_user_transactions(str(current_user.id))
-    return [TransactionResponse(
-        id=str(tx.id),
-        date=tx.created_at,
-        pointsSpent=tx.points_spent,
-        userId=str(tx.user_id),
-        fileId=str(tx.file_id),
-    ) for tx in txs]
-
-@router.get("/transactions/file/{file_id}", response_model=list[TransactionResponse])
-async def file_transactions(
-    file_id: str,
-):
-    txs = await FilePurchaseService.get_all_file_transactions(file_id)
     return [TransactionResponse(
         id=str(tx.id),
         date=tx.created_at,

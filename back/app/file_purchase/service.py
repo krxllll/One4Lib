@@ -7,7 +7,7 @@ from app.files.models import File
 from .models import FilePurchaseTransaction
 from app.account.models import User
 from fastapi import HTTPException, status
-from app.commissions.service import CommissionService
+from app.points.service import PointsService
 
 
 class FilePurchaseService:
@@ -44,7 +44,7 @@ class FilePurchaseService:
         # 4) Списання поінтів
         await u.update({'$inc': {'points': -f.price}})
 
-        # 5) Інкремент лічильника скачувань
+        # 5) Інкремент лічильника покупок
         await f.update({'$inc': {'purchase_count': 1}})
 
         # 6) Запис транзакції
@@ -57,7 +57,7 @@ class FilePurchaseService:
         await tx.insert()
 
         # 7) Нарахування авторської комісії
-        await CommissionService.distribute_commission(
+        await PointsService.distribute_commission(
             author_id=str(f.author_id),
             file_id=file_id,
             total_price=f.price
@@ -68,13 +68,6 @@ class FilePurchaseService:
         uid = PydanticObjectId(user_id)
         return await FilePurchaseTransaction.find(
             FilePurchaseTransaction.user_id == uid
-        ).to_list()
-
-    @staticmethod
-    async def get_all_file_transactions(file_id: str) -> list[FilePurchaseTransaction]:
-        fid = PydanticObjectId(file_id)
-        return await FilePurchaseTransaction.find(
-            FilePurchaseTransaction.file_id == fid
         ).to_list()
 
     @staticmethod
