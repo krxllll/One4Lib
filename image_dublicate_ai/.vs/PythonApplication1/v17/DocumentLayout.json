@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\Work\\Politeh\\2_year_2_semester\\Distributed_systems\\\u0420\u043E\u0437\u0440\u0430\u0445\u0443\u043D\u043A\u043E\u0432\u0430\\PythonApplication1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{54A82405-D3C2-4B4A-B14B-10A8EA5D6342}|PythonApplication1\\PythonApplication1.pyproj|E:\\Work\\Politeh\\2_year_2_semester\\Distributed_systems\\\u0420\u043E\u0437\u0440\u0430\u0445\u0443\u043D\u043A\u043E\u0432\u0430\\PythonApplication1\\PythonApplication1\\PythonApplication1.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{54A82405-D3C2-4B4A-B14B-10A8EA5D6342}|PythonApplication1\\PythonApplication1.pyproj|solutionrelative:PythonApplication1\\PythonApplication1.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PythonApplication1.py",
+              "DocumentMoniker": "E:\\Work\\Politeh\\2_year_2_semester\\Distributed_systems\\\u0420\u043E\u0437\u0440\u0430\u0445\u0443\u043D\u043A\u043E\u0432\u0430\\PythonApplication1\\PythonApplication1\\PythonApplication1.py",
+              "RelativeDocumentMoniker": "PythonApplication1\\PythonApplication1.py",
+              "ToolTip": "E:\\Work\\Politeh\\2_year_2_semester\\Distributed_systems\\\u0420\u043E\u0437\u0440\u0430\u0445\u0443\u043D\u043A\u043E\u0432\u0430\\PythonApplication1\\PythonApplication1\\PythonApplication1.py",
+              "RelativeToolTip": "PythonApplication1\\PythonApplication1.py",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAuwHoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2025-04-30T17:15:50.912Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
