@@ -1,0 +1,100 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+dist
+dist-ssr
+coverage
+*.local
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+pip-wheel-metadata/
+
+# Virtualenvs
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.env
+.env.*.local
+
+# Installers
+*.exe
+*.msi
+*.msm
+*.msp
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Translations
+*.mo
+*.pot
+
+# FastAPI / Uvicorn
+*.pid
+*.sock
+
+# IDEs
+.idea/
+.idea
+.vscode/
+.vscode/*
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# Vue.js / Node
+node_modules/
+node_modules
+frontend/.vite/
+frontend/.output/
+
+# Logs
+logs
+lerna-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Cypress
+/cypress/videos/
+/cypress/screenshots/
