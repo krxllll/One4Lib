@@ -1,5 +1,5 @@
 # app/files/schemas.py
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, constr, conint
 from typing import List, Optional
 import datetime as _dt
 
@@ -7,7 +7,7 @@ class FileUploadRequest(BaseModel):
     title: str
     description: Optional[str] = None
     file_type: str
-    price: int = 0
+    price: conint(ge=4) = 4
     tags: List[constr(strip_whitespace=True, min_length=1)] = []
 
 class FileResponse(BaseModel):

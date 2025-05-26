@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 class PointsService:
-    REWARD_ON_UPLOAD = 4
+    REWARD_ON_UPLOAD = 1
     BASE_COMMISSION_RATE = 10  # відсотків
 
     @staticmethod
