@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  frontend-prod:
+    build:
+      context: ./frontend
+    image: frontend:prod
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always

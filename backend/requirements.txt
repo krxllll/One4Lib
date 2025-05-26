@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pillow
+python-multipart
+beanie
+boto3
+botocore
+python-dotenv
+passlib[bcrypt]
+pydantic[email]
+pydantic-mongo
+pydantic-settings
+motor
+PyJWT
+httpx

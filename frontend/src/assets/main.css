@@ -1,0 +1,33 @@
+@import './base.css';
+
+a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.container {
+  width: 100%;
+  padding-left: calc((100% - 1440px)/2);
+  padding-right: calc((100% - 1440px)/2);
+}
+
+.btn {
+  font-family: var(--font-btn), sans-serif;
+  height: 30px;
+  width: 140px;
+  border: var(--color-accent) 2px solid;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text);
+  text-transform: uppercase;
+  font-size: 14px;
+  line-height: 30px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
