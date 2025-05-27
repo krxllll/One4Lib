@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 from app.schemas.account import RegisterPassword, LoginPassword, TokenUserResponse, OAuthToken
 from app.services.account import AccountService
 from app.models.account import User
+from app.core.config import settings
 
 
 router = APIRouter(tags=["auth"])
@@ -10,18 +11,20 @@ router = APIRouter(tags=["auth"])
 async def register_pw(data: RegisterPassword):
     token = await AccountService.register_password(data)
     # username у нас вже в data
-    return TokenUserResponse(access_token=token, username=data.username)
+    expires_in = settings.jwt_exp_minutes * 60
+    return TokenUserResponse(access_token=token, username=data.username, expires_in=expires_in)
 
 @router.post("/login", response_model=TokenUserResponse)
 async def login_pw(data: LoginPassword):
     token = await AccountService.login_password(data)
     # після успішного логіну знаходимо користувача, щоби взяти username
     user = await User.find_one(User.email == data.email)
+    expires_in = settings.jwt_exp_minutes * 60
     if not user:
         # таке навряд чи станеться, але на всяк випадок
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="User just logged-in but not found")
-    return TokenUserResponse(access_token=token, username=user.username)
+    return TokenUserResponse(access_token=token, username=user.username, expires_in=expires_in)
 
 @router.post("/login/google", response_model=TokenUserResponse)
 async def login_google(data: OAuthToken):
@@ -29,11 +32,13 @@ async def login_google(data: OAuthToken):
     # отримуємо email з токена, далі username у базі
     email = await AccountService._verify_google(data.oauth_token)
     user = await User.find_one(User.email == email)
-    return TokenUserResponse(access_token=token, username=user.username)
+    expires_in = settings.jwt_exp_minutes * 60
+    return TokenUserResponse(access_token=token, username=user.username, expires_in=expires_in)
 
 @router.post("/login/github", response_model=TokenUserResponse)
 async def login_github(data: OAuthToken):
     token = await AccountService.auth_github(data)
     email = await AccountService._verify_github(data.oauth_token)
     user = await User.find_one(User.email == email)
-    return TokenUserResponse(access_token=token, username=user.username)
+    expires_in = settings.jwt_exp_minutes * 60
+    return TokenUserResponse(access_token=token, username=user.username, expires_in=expires_in)

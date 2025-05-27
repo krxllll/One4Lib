@@ -5,6 +5,7 @@ class TokenUserResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     username: str
+    expires_in: int
 
 class UserOut(BaseModel):
     id: str  # ObjectId as str
