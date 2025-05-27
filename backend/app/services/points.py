@@ -1,27 +1,27 @@
 from fastapi import HTTPException, status
-from bson import ObjectId
 from app.models.account import User
 from app.models.points import PointRewardTransaction, PointPurchaseTransaction
 from app.schemas.points import PurchaseRequest, TransactionPublic
 from datetime import datetime
+from beanie import PydanticObjectId
 
 
 class PointsService:
-    REWARD_ON_UPLOAD = 4
+    REWARD_ON_UPLOAD = 1
     BASE_COMMISSION_RATE = 10  # відсотків
 
     @staticmethod
     async def add_points_for_upload(user_id: str, file_id: str) -> None:
         # 1) знайти користувача
-        user = await User.get(ObjectId(user_id))
+        user = await User.get(PydanticObjectId(user_id))
         if not user:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
         # 2) додати бали
         await user.update({'$inc': {'points': PointsService.REWARD_ON_UPLOAD}})
         # 3) записати транзакцію винагороди
         tx = PointRewardTransaction(
-            user_id=ObjectId(user_id),
-            file_id=ObjectId(file_id),
+            userId=PydanticObjectId(user_id),
+            fileId=PydanticObjectId(file_id),
             amount=PointsService.REWARD_ON_UPLOAD,
             reason="upload_reward",
         )
@@ -34,8 +34,8 @@ class PointsService:
             file_id: str,
             total_price: int,
     ) -> None:
-        aid = ObjectId(author_id)
-        fid = ObjectId(file_id)
+        aid = PydanticObjectId(author_id)
+        fid = PydanticObjectId(file_id)
 
         # 1) Перевіряємо, що автор існує
         author = await User.get(aid)
@@ -55,8 +55,8 @@ class PointsService:
 
         # 4) Логування транзакції комісії
         tx = PointRewardTransaction(
-            user_id=aid,
-            file_id=fid,
+            userId=aid,
+            fileId=fid,
             amount=commission_amount,
             reason="author_commission",
             created_at=datetime.utcnow(),
@@ -66,12 +66,12 @@ class PointsService:
     @staticmethod
     async def purchase_points(user_id: str, req: PurchaseRequest) -> None:
         # TODO: verify payment via external provider
-        user = await User.get(ObjectId(user_id))
+        user = await User.get(PydanticObjectId(user_id))
         if not user:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
         await user.update({'$inc': {'points': req.amount}})
         tx = PointPurchaseTransaction(
-            user_id=ObjectId(user_id),
+            userId=PydanticObjectId(user_id),
             amount=req.amount,
             payment_method=req.payment_method,
             payment_meta=req.payment_token[-4:],
@@ -80,14 +80,14 @@ class PointsService:
 
     @staticmethod
     async def get_balance(user_id: str) -> int:
-        user = await User.get(ObjectId(user_id))
+        user = await User.get(PydanticObjectId(user_id))
         if not user:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
         return user.points
 
     @staticmethod
     async def list_transactions(user_id: str) -> list[TransactionPublic]:
-        uid = ObjectId(user_id)
+        uid = PydanticObjectId(user_id)
         purchases = await PointPurchaseTransaction.find(
             PointPurchaseTransaction.user_id == uid
         ).to_list()
