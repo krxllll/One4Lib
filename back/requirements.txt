@@ -1,9 +1,0 @@
-fastapi
-uvicorn[standard]
-pymongo
-motor
-boto3
-python-dotenv
-passlib[bcrypt]
-PyJWT
-pydantic
