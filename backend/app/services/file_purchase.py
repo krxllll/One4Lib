@@ -1,4 +1,4 @@
-from bson import ObjectId
+
 from datetime import datetime
 from beanie import PydanticObjectId
 from app.models.files import File
@@ -13,8 +13,8 @@ class FilePurchaseService:
 
     @staticmethod
     async def purchase_file(user_id: str, file_id: str) -> None:
-        uid = ObjectId(user_id)
-        fid = ObjectId(file_id)
+        uid = PydanticObjectId(user_id)
+        fid = PydanticObjectId(file_id)
 
         # 1) Перевірка існування файлу
         f = await File.get(fid)

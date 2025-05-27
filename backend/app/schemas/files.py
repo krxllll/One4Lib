@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr, Field
+from pydantic import BaseModel, constr, Field, conint
 from typing import List, Optional
 import datetime as _dt
 
@@ -7,8 +7,8 @@ class FileUploadRequest(BaseModel):
     title: str
     description: Optional[str] = None
     file_type: str
-    price: int = 0
-    tags: List[constr(strip_whitespace=True, min_length=1)] = Field(default_factory=list)
+    price: conint(ge=4) = 4
+    tags: List[constr(strip_whitespace=True, min_length=1)] = []
 
 
 class FileResponse(BaseModel):
@@ -21,7 +21,11 @@ class FileResponse(BaseModel):
     tags: List[str]
     purchase_count: int
     upload_date: _dt.datetime
-    file_url: str  # URL до файлу або прев’ю залежно від прав
+
+    thumbnail_url: Optional[str] = None
+    preview_url: Optional[str] = None
+    file_url: Optional[str] = None
+
     viewer_status: str  # статус глядача: not_logged_in, logged_in, author, owner
 
 

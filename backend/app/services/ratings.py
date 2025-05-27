@@ -1,6 +1,7 @@
 from bson import ObjectId
 import datetime as _dt
 from app.models.ratings import Rating
+from beanie import PydanticObjectId
 
 
 class RatingService:
@@ -8,8 +9,8 @@ class RatingService:
 
     @staticmethod
     async def rate_file(user_id: str, file_id: str, value: int) -> None:
-        uid = ObjectId(user_id)
-        fid = ObjectId(file_id)
+        uid = PydanticObjectId(user_id)
+        fid = PydanticObjectId(file_id)
         now = _dt.datetime.utcnow()
         existing = await Rating.find_one({"user_id": uid, "file_id": fid})
         if existing:
