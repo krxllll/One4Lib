@@ -1,8 +1,12 @@
 :root {
-  --color-text: #fff;
-  --color-background: #141414;
-  --color-placeholder: #94A3B8;
+  --color-white: #fff;
+  --color-black: #000;
+  --color-background-primary: #141414;
+  --color-background-secondary: #2A2A2A;
+  --color-placeholder-primary: #94A3B8;
+  --color-placeholder-secondary: #737373;
   --color-accent: #FF3700;
+  --font-primary: 'Kulim Park';
   --font-btn: 'Catamaran';
 }
 
@@ -15,8 +19,8 @@
 
 body {
   min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
+  color: var(--color-white);
+  background: var(--color-black);
   transition:
     color 0.5s,
     background-color 0.5s;

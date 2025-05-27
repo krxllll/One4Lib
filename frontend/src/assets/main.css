@@ -1,8 +1,13 @@
 @import './base.css';
 
 a {
-  color: var(--color-text);
+  color: var(--color-white);
   text-decoration: none;
+  font-family: var(--font-btn), sans-serif;
+}
+
+a:hover {
+  color: var(--color-accent);
 }
 
 svg {
@@ -23,11 +28,32 @@ svg {
   border: var(--color-accent) 2px solid;
   border-radius: 6px;
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-white);
   text-transform: uppercase;
   font-size: 14px;
   line-height: 30px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--color-background-secondary);
+  color: var(--color-accent);
+}
+
+.bg-green {
+  background-color: #2d9b73;
+}
+.bg-red {
+  background-color: #c82020;
+}
+.bg-blue {
+  background-color: #207084;
+}
+.bg-purple {
+  background-color: #734b9b;
+}
+.unselected {
+  background-color: var(--color-background-secondary);
 }
 

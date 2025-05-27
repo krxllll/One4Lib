@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import GoogleIcon from "@/components/icons/GoogleIcon.vue";
 import GitHubIcon from "@/components/icons/GitHubIcon.vue";
 </script>
@@ -8,7 +7,9 @@ import GitHubIcon from "@/components/icons/GitHubIcon.vue";
   <div class="container">
     <div class="content">
       <div class="title">
-        <h1>One<span>4</span>Lib</h1>
+        <router-link to="/">
+          <h1>One<span>4</span>Lib</h1>
+        </router-link>
         <h2>Registration</h2>
       </div>
       <div class="form-box">
@@ -54,7 +55,7 @@ import GitHubIcon from "@/components/icons/GitHubIcon.vue";
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #000;
+  background: radial-gradient(circle,var(--color-background-primary) 0%, var(--color-black) 100%);
 }
 .content {
   display: flex;
@@ -74,13 +75,16 @@ import GitHubIcon from "@/components/icons/GitHubIcon.vue";
 .title h1 span {
   color: var(--color-accent);
 }
+.title h1:hover span {
+  color: var(--color-white);
+}
 .title h2 {
   font-size: 32px;
   font-weight: 275;
 }
 .form-box {
   width: 380px;
-  background: linear-gradient(0deg, rgba(67, 67, 67, 0.68) 0%, rgba(39, 39, 39, 0.68) 100%);
+  background: linear-gradient(135deg, var(--color-background-primary), var(--color-black) 100%);
   padding: 30px;
   display: flex;
   flex-direction: column;
@@ -106,17 +110,17 @@ form {
 }
 .input-group input {
   padding: 8px 9px;
-  border: 1px solid var(--color-placeholder);
+  border: 1px solid var(--color-placeholder-primary);
   border-radius: 6px;
   background: transparent;
 }
 .input-group input:focus {
   border-color: var(--color-accent);
   outline: none;
-  color: var(--color-text);
+  color: var(--color-white);
 }
 .input-group input::placeholder {
-  color: var(--color-placeholder);
+  color: var(--color-placeholder-primary);
   font-family: 'Kulim Park', sans-serif;
 }
 .btn {
@@ -132,10 +136,10 @@ form {
 .separator hr {
   flex: 1;
   border: none;
-  border-top: 1px solid white;
+  border-top: 1px solid var(--color-white);
 }
 .separator span {
-  color: var(--color-text);
+  color: var(--color-white);
   line-height: 20px;
   font-size: 14px;
   font-weight: 400;
@@ -147,7 +151,7 @@ form {
   gap: 16px;
 }
 .login-link {
-  color: var(--color-text);
+  color: var(--color-white);
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
