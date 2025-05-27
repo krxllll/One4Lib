@@ -1,10 +1,10 @@
 from pydantic import BaseModel, EmailStr, constr
 
 
-class TokenResponse(BaseModel):
+class TokenUserResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
+    username: str
 
 class UserOut(BaseModel):
     id: str  # ObjectId as str

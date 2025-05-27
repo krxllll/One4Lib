@@ -98,3 +98,7 @@ pnpm-debug.log*
 # Cypress
 /cypress/videos/
 /cypress/screenshots/
+
+#tests
+tests/
+results/

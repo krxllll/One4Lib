@@ -27,11 +27,11 @@ async def upload_file(
 @router.get("/", response_model=list[FileResponse])
 async def list_files(
     tags: Optional[List[str]] = Query(None),
-    file_type: Optional[str] = Query(None),
+    file_types: Optional[List[str]] = Query(None),
     current_user=Depends(get_current_user_optional)
 ):
     user_id = str(current_user.id) if current_user else None
-    return await FileService.list_files(user_id=user_id, filters=tags, file_type=file_type)
+    return await FileService.list_files(user_id=user_id, filters=tags, file_types=file_types)
 
 @router.get("/{file_id}", response_model=FileResponse)
 async def get_file(
