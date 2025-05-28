@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { onMounted, ref } from "vue";
+import {computed, onMounted, ref} from "vue";
 import { api } from "@/utils/api.ts";
 import axios from "axios";
 import { handleApiError } from "@/utils/handleApiError.ts";
@@ -15,6 +15,10 @@ const id = route.params.id as string;
 const file = ref<File>();
 const isOwned = ref(false);
 const auth = useAuthStore()
+
+const isLoggedIn = computed(() =>
+  !!auth.accessToken && Date.now() < auth.expiresAt
+)
 
 onMounted(async () => {
   try {
@@ -41,6 +45,12 @@ const toggleWishlist = () => {
 }
 
 const buyFile = async () => {
+  if (!isLoggedIn.value) {
+    console.warn('User is not logged in, redirecting to login page');
+    alert('You need to be logged in to purchase files.');
+    await router.push('/login');
+    return;
+  }
   if (isOwned.value) return
   try {
     const response = await api.post('/file-purchase/file', { file_id: id })
@@ -67,6 +77,8 @@ const buyFile = async () => {
     }
   }
 }
+
+//TODO Implement download functionality
 </script>
 
 <template>
