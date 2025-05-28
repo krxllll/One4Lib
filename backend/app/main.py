@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 
@@ -47,6 +48,14 @@ app = FastAPI(lifespan=lifespan,
 docs_url = "/api/",
 redoc_url = None,
 openapi_url = "/api/openapi.json"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://one4lib.onrender.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # API routes
