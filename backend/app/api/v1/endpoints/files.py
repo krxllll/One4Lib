@@ -26,8 +26,8 @@ async def upload_file(
 
 @router.get("/", response_model=list[FileResponse])
 async def list_files(
-    tags: Optional[List[str]] = Query(None),
-    file_types: Optional[List[str]] = Query(None),
+    tags: Optional[List[str]] = Query(None, alias="tag"),
+    file_types: Optional[List[str]] = Query(None, alias="file_type"),
     current_user=Depends(get_current_user_optional)
 ):
     user_id = str(current_user.id) if current_user else None

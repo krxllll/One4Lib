@@ -21,7 +21,6 @@ defineProps({
     :height="height"
     :width="width"
     :viewBox="viewBox"
-    fill="none"
     xmlns="http://www.w3.org/2000/svg">
     <path d="M15.5832 1.125H1.4165L7.08317 7.82583V12.4583L9.9165 13.875V7.82583L15.5832 1.125Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>

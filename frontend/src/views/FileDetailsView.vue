@@ -1,36 +1,35 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
+import { api } from "@/utils/api.ts";
+import axios from "axios";
+import { handleApiError } from "@/utils/handleApiError.ts";
 import PointIcon from "@/components/icons/PointIcon.vue";
 import StarIcon from "@/components/icons/StarIcon.vue";
+import {type File, type FileType, fileTypeColors} from "@/types/file.ts";
+import router from "@/router";
+import { useAuthStore } from "@/stores/auth.ts";
 
 const route = useRoute();
-const id = Number(route.params.id);
-const file = ref();
+const id = route.params.id as string;
+const file = ref<File>();
+const isOwned = ref(false);
+const auth = useAuthStore()
 
-onMounted(() => {
-  file.value = {
-    title: "Sample File",
-    author: "author_username",
-    price: 10,
-    type: "PDF",
-    rating: 5,
-    description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusantium aliquid assumenda at cum dolores dolorum eos esse exercitationem explicabo itaque iure libero minus, necessitatibus nulla obcaecati odit perspiciatis provident quibusdam quis quisquam, quod ratione reiciendis reprehenderit rerum saepe sed tempore, veritatis vitae voluptas voluptatibus. Aliquam consequatur earum eius excepturi itaque iusto nesciunt, qui ut voluptatibus! A assumenda blanditiis eum illo molestiae nam natus repudiandae voluptas! A eligendi in necessitatibus reiciendis sunt vel, veniam? Dicta esse est quibusdam sed. Aspernatur consectetur cumque magni molestiae natus provident rerum, sunt tenetur ut vitae? Ab, aliquid beatae consequatur cum cupiditate, debitis esse et fuga maxime nisi nobis perspiciatis, possimus recusandae reiciendis saepe? Asperiores blanditiis delectus deserunt fugit impedit iste iusto minima neque perspiciatis porro, voluptatibus voluptatum. Ad alias, aperiam at beatae deleniti doloremque dolorum earum eum ex id inventore labore magnam maiores maxime molestiae nihil porro repudiandae saepe sed sunt velit, vero vitae voluptatem.",
-    thumbnail: "https://placehold.co/340x340?text=Preview&font=roboto",
-    preview: "/sample.mp3",
-  };
+onMounted(async () => {
+  try {
+    const {data} = await api.get(`/files/${id}`);
+    file.value = data;
+    data.viewer_status === 'author' || data.viewer_status === 'owner' ? isOwned.value = true : isOwned.value = false;
+  } catch (err) {
+    const message = handleApiError(err, 'Fetching file details failed')
+    console.error('Error while fetching file details:', message)
+  }
 });
 
-const fileTypes = ['pdf', 'doc', 'xlsx', 'jpg', 'png', 'svg', 'mp3', 'mp4', 'py', 'cpp'] as const
-type FileType = typeof fileTypes[number]
-
 const getColorClass = (type: FileType): string => {
-  const t = type.toLowerCase()
-  if (['pdf', 'doc', 'xlsx'].includes(t)) return 'bg-green'
-  if (['jpg', 'png', 'svg'].includes(t)) return 'bg-red'
-  if (['mp3', 'mp4'].includes(t)) return 'bg-blue'
-  if (['py', 'cpp'].includes(t)) return 'bg-purple'
-  return 'unselected'
+  const t = type.toLowerCase().split('/')[0]
+  return fileTypeColors[t] || 'unselected'
 }
 
 const toggleWishlist = () => {
@@ -40,12 +39,40 @@ const toggleWishlist = () => {
     wishlistButton.textContent = wishlistButton.classList.contains('active') ? 'Remove from wishlist' : 'Add to wishlist';
   }
 }
+
+const buyFile = async () => {
+  if (isOwned.value) return
+  try {
+    const response = await api.post('/file-purchase/file', { file_id: id })
+    if (response.status === 204) {
+      console.log('File purchased successfully')
+      isOwned.value = true
+      await auth.getUserBalance()
+    } else {
+      console.warn('Unexpected status:', response.status)
+    }
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response) {
+      const status = err.response.status
+      if (status === 402) {
+        alert('There is not enough balance to purchase the file.')
+        await router.push('/shop')
+      } else if (status === 422) {
+        console.error('Validation error.')
+      } else {
+        console.error('Other mistake when buying:', status)
+      }
+    } else {
+      console.error('Unknown error during purchase:', err)
+    }
+  }
+}
 </script>
 
 <template>
   <div class="container" v-if="file">
     <div class="thumbnail">
-      <img :src="file.thumbnail" alt="File Thumbnail" />
+      <img :src="file.thumbnail_url" alt="File Thumbnail" />
     </div>
     <div class="content">
       <div class="header">
@@ -53,8 +80,8 @@ const toggleWishlist = () => {
           {{ file.title }}
         </h1>
         <div class="subtitle">
-          <h2 class="autor">
-            {{ file.author }}
+          <h2 class="author">
+            {{ file.author_username }}
           </h2>
           <button class="wishlist" @click="toggleWishlist">Add to wishlist</button>
         </div>
@@ -65,30 +92,26 @@ const toggleWishlist = () => {
             <p>{{ file.price }}</p>
             <PointIcon height="36" width="36" viewBox="0 0 24 24" class="icon"/>
           </div>
-          <div :class="['type', getColorClass(file.type)]">
-            <p>{{ file.type }}</p>
+          <div :class="['type', getColorClass(file.file_type)]">
+            <p>{{ file.file_type.split('/')[1].toUpperCase() }}</p>
           </div>
           <div class="rating">
-            <p>{{ file.rating/2 }}</p>
-            <StarIcon :rating=file.rating height="24" width="24" viewBox="0 0 24 24" class="icon"/>
+            <p>{{ 4.5 }}</p>
+            <StarIcon :rating=9 height="24" width="24" viewBox="0 0 24 24" class="icon"/>
           </div>
         </div>
         <div class="actions">
-          <button class="buy btn">Buy</button>
-          <button class="btn">Download</button>
+          <button class="buy btn" :disabled="isOwned" @click="buyFile">{{ isOwned ? 'Owned' : 'Buy' }}</button>
+          <button class="btn" :disabled="!isOwned">Download</button>
           <div class="rate-btn">
-            <StarIcon :rating=0 height="24" width="24" viewBox="0 0 24 24" class="icon"/>
-            <StarIcon :rating=0 height="24" width="24" viewBox="0 0 24 24" class="icon"/>
-            <StarIcon :rating=0 height="24" width="24" viewBox="0 0 24 24" class="icon"/>
-            <StarIcon :rating=0 height="24" width="24" viewBox="0 0 24 24" class="icon"/>
-            <StarIcon :rating=0 height="24" width="24" viewBox="0 0 24 24" class="icon"/>
+            <StarIcon v-for="i in 5" :key="i" :rating=0 height="24" width="24" viewBox="0 0 24 24" class="icon"/>
           </div>
         </div>
       </div>
     </div>
     <div class="preview-description">
       <div class="preview">
-        <iframe :src="file.preview" width="100%" height="100%" allowfullscreen></iframe>
+        <iframe :src="file.preview_url" width="100%" height="100%" allowfullscreen></iframe>
       </div>
       <div class="description">
         <p>{{ file.description }}</p>
@@ -155,7 +178,7 @@ const toggleWishlist = () => {
 .wishlist.active {
   color: var(--color-accent);
 }
-.autor {
+.author {
   font-size: 24px;
   line-height: 24px;
   font-weight: 200;
@@ -246,5 +269,11 @@ const toggleWishlist = () => {
 }
 .buy:hover {
   background-color: var(--color-background-secondary);
+}
+.buy:disabled {
+  background-color: var(--color-placeholder-secondary);
+  color: var(--color-placeholder-primary);
+  border-color: var(--color-placeholder-secondary);
+  cursor: not-allowed;
 }
 </style>

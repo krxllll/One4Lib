@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import PointIcon from "@/components/icons/PointIcon.vue";
 import FolderIcon from "@/components/icons/FolderIcon.vue";
-import { ref } from 'vue'
+import {ref, watch} from 'vue'
+import { type FileType, fileTypes } from "@/types/file.ts";
+import { api } from "@/utils/api.ts";
+import { useAuthStore } from "@/stores/auth.ts";
+import { handleApiError } from "@/utils/handleApiError.ts";
 
+const auth = useAuthStore();
+
+const file = ref<File | null>(null)
 const fileName = ref('')
 const isDragOver = ref(false)
 
 function onFileChange(event: Event) {
   const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) fileName.value = file.name
+  const selected = target.files?.[0] || null
+  if (selected) {
+    file.value = selected
+    fileName.value = selected.name
+  }
 }
 
 function onDragOver() {
@@ -22,8 +32,67 @@ function onDragLeave() {
 
 function onDrop(event: DragEvent) {
   isDragOver.value = false
-  const file = event.dataTransfer?.files?.[0]
-  if (file) fileName.value = file.name
+  const selected = event.dataTransfer?.files?.[0]
+  if (selected) {
+    file.value = selected
+    fileName.value = selected.name
+  }
+}
+
+const fileTitle = ref('')
+const fileDescription = ref('')
+const fileType = ref<FileType>()
+const filePrice = ref(0)
+
+watch(fileName, () => {
+  if (fileName.value) {
+    const fileExtension = fileName.value.split('.').pop()?.toLowerCase()
+    if (fileExtension) {
+      const type = fileTypes.find(t => t.toLowerCase().split('/')[1] === fileExtension)
+      fileType.value = type ? type : undefined
+    } else {
+      fileType.value = undefined
+    }
+  } else {
+    fileType.value = undefined
+  }
+})
+
+async function uploadFile() {
+  if (!fileType.value) {
+    alert('Unsupported file type. Please upload a PNG, PDF, or MP3 file.')
+    return
+  }
+  if (!file.value || !fileTitle.value || !fileDescription.value || filePrice.value < 0) {
+    alert('Please fill in all fields and select a file.')
+    return
+  }
+
+  const meta = {
+    title: fileTitle.value,
+    description: fileDescription.value,
+    file_type: fileType.value,
+    price: filePrice.value,
+  }
+
+  const formData = new FormData()
+  formData.append('meta', JSON.stringify(meta))
+  formData.append('raw_file', file.value!)
+
+  try {
+    const response = await api.post('/files/upload', formData)
+    console.log('File uploaded successfully:', response)
+    alert('File uploaded successfully!')
+    await auth.getUserBalance()
+    fileName.value = ''
+    fileTitle.value = ''
+    fileDescription.value = ''
+    filePrice.value = 0
+    file.value = null
+  } catch (err) {
+    const message = handleApiError(err, 'File upload failed')
+    console.error('File upload error:', message)
+  }
 }
 </script>
 
@@ -33,20 +102,20 @@ function onDrop(event: DragEvent) {
       <h1>Upload your file here</h1>
       <p>Currently supported filetypes: PNG, PDF, MP3</p>
     </div>
-    <form class="content">
+    <form class="content" @submit.prevent="uploadFile">
       <div class="upload-form">
         <div class="input-group">
           <label for="title">Title</label>
-          <input type="text" id="title" placeholder="Type file title" required />
+          <input v-model="fileTitle" type="text" id="title" placeholder="Type file title" required />
         </div>
         <div class="input-group">
           <label for="description">Description</label>
-          <textarea id="description" placeholder="Type file description" />
+          <textarea v-model="fileDescription" id="description" placeholder="Type file description" />
         </div>
         <div class="input-group">
           <label for="price">Price</label>
           <div class="price">
-            <input type="number" id="price" placeholder="Type file price" required />
+            <input v-model="filePrice" type="number" id="price" placeholder="Type file price" required />
             <PointIcon height="24" width="24" viewBox="0 0 24 24" class="icon" />
           </div>
         </div>
@@ -143,6 +212,7 @@ function onDrop(event: DragEvent) {
 }
 #price {
   width: 30%;
+  font-family: var(--font-btn), sans-serif;
 }
 .input-group .price {
   display: flex;
@@ -159,6 +229,7 @@ function onDrop(event: DragEvent) {
   background: transparent;
   font-size: 16px;
   color: var(--color-white);
+  font-family: var(--font-primary), sans-serif;
 }
 .input-group input:focus, .input-group textarea:focus {
   border-color: var(--color-accent);
@@ -167,7 +238,7 @@ function onDrop(event: DragEvent) {
 }
 .input-group input::placeholder, .input-group textarea::placeholder {
   color: var(--color-placeholder-primary);
-  font-family: 'Kulim Park', sans-serif;
+  font-family: var(--font-primary), sans-serif;
 }
 .file-upload input[type="file"] {
   display: none;
