@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import { defineProps } from 'vue';
 import PointIcon from "@/components/icons/PointIcon.vue";
-const props = defineProps({
-  loggedIn: {
-    type: Boolean,
-    default: false,
-  },
-  username: {
-    type: String,
-    default: 'username',
-  },
-  balance: {
-    type: Number,
-    default: 0,
-  },
-});
+import { useAuthStore } from '@/stores/auth'
+import { computed } from 'vue'
+const auth = useAuthStore()
+
+const isLoggedIn = computed(() =>
+  !!auth.accessToken && Date.now() < auth.expiresAt
+)
 </script>
 
 <template>
@@ -29,13 +21,13 @@ const props = defineProps({
       <router-link to="/upload">Upload</router-link>
     </div>
     <div class="user-info">
-      <router-link to="/login" v-if="!loggedIn">Login</router-link>
-      <router-link to="/signup" class="signup" v-if="!loggedIn">Sign Up</router-link>
-      <router-link class="balance" to="" v-if="loggedIn">
-        <span>{{ balance }}</span>
+      <router-link to="/login" v-if="!isLoggedIn">Log in</router-link>
+      <router-link to="/signup" class="signup" v-if="!isLoggedIn">Sign up</router-link>
+      <router-link class="balance" to="/shop" v-if="isLoggedIn">
+        <span>{{ auth.balance }}</span>
         <PointIcon height="16" width="16" viewBox="0 0 24 24" class="icon" />
       </router-link>
-      <router-link class="username" to="" v-if="loggedIn">{{ username }}</router-link>
+      <router-link class="username" to="/profile" v-if="isLoggedIn">{{ auth.username }}</router-link>
     </div>
   </nav>
 </template>
@@ -91,6 +83,8 @@ const props = defineProps({
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 60px;
+  justify-content: end;
 }
 .balance .icon {
   color: var(--color-accent);

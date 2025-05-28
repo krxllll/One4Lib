@@ -1,24 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { api } from "@/utils/api.ts";
 import FilterIcon from "@/components/icons/FilterIcon.vue";
 import SearchIcon from "@/components/icons/SearchIcon.vue";
 import FileThumbnail from "@/components/FileThumbnail.vue";
-
-const fileTypes = ['pdf', 'doc', 'xlsx', 'jpg', 'png', 'svg', 'mp3', 'mp4', 'py', 'cpp'] as const
-type FileType = typeof fileTypes[number]
+import { handleApiError } from "@/utils/handleApiError.ts";
+import { type File, fileTypes, type FileType, fileTypeColors } from "@/types/file.ts";
 
 const selectedTypes = ref<FileType[]>([])
 
 const isSelected = (type: FileType): boolean => selectedTypes.value.includes(type)
 
 const getColorClass = (type: FileType): string => {
-  const t = type.toLowerCase()
-  if (['pdf', 'doc', 'xlsx'].includes(t)) return 'bg-green'
-  if (['jpg', 'png', 'svg'].includes(t)) return 'bg-red'
-  if (['mp3', 'mp4'].includes(t)) return 'bg-blue'
-  if (['py', 'cpp'].includes(t)) return 'bg-purple'
-  return 'unselected'
+  const t = type.toLowerCase().split('/')[0]
+  return fileTypeColors[t] || 'unselected'
 }
 
 const selectAll = () => {
@@ -37,15 +33,35 @@ const toggleFilters = () => {
   // Additional logic for toggling filters can be added here
 }
 
-const files = [
-  { id: 1, name: 'Document 1', type: 'docx', thumbnail: 'https://placehold.co/340x340?text=Document&font=roboto' },
-  { id: 2, name: 'Image 2', type: 'jpg', thumbnail: 'https://placehold.co/340x340?text=Image&font=roboto' },
-  { id: 3, name: 'Music 3', type: 'mp3', thumbnail: 'https://placehold.co/340x340?text=Music&font=roboto' },
-] as const
-type FileId = typeof files[number]['id']
+const files = ref<File[]>([])
+const fileCount = computed(() => files.value.length)
+
+async function getFiles() {
+  try {
+    const params: any = {}
+    if (selectedTypes.value.length > 0 && selectedTypes.value.length < fileTypes.length) {
+      params.file_type = selectedTypes.value
+    }
+    const { data } = await api.get('/files/', { params })
+    files.value = data
+    console.log('Files fetched successfully:', files.value)
+    console.log('Selected types:', selectedTypes.value)
+  } catch (err) {
+    const message = handleApiError(err, 'Fetching files failed')
+    console.error('Error while fetching files:', message)
+  }
+}
+
+watch(selectedTypes, () => {
+  getFiles()
+})
+
+onMounted(() => {
+  getFiles()
+})
 
 const router = useRouter()
-const goToDetails = (id: FileId) => {
+const goToDetails = (id: string) => {
   router.push({ name: 'fileDetails', params: { id } })
 }
 </script>
@@ -65,7 +81,7 @@ const goToDetails = (id: FileId) => {
             :value="type"
             v-model="selectedTypes"
           >
-          <span>{{ type.toUpperCase() }}</span>
+          <span>{{ type.split('/')[1].toUpperCase() }}</span>
         </label>
       </div>
       <div class="select-buttons">
@@ -91,13 +107,13 @@ const goToDetails = (id: FileId) => {
         </div>
       </div>
       <div class="search-results">
-        <h1>Search results: <span></span> were found</h1>
+        <h1>Search results: <span>{{ fileCount }}</span> were found</h1>
         <div class="results">
           <FileThumbnail
-            v-for="file in files"
-            :key=file.id :title=file.name
-            :type=file.type
-            :imageUrl=file.thumbnail
+            v-for="file in files || []"
+            :key=file.id :title=file.title
+            :type=file.file_type
+            :imageUrl=file.thumbnail_url
             @click="goToDetails(file.id)"
           />
         </div>
@@ -125,7 +141,7 @@ const goToDetails = (id: FileId) => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: linear-gradient(135deg, var(--color-background-primary), var(--color-black) 100%);
+  background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-black) 100%);
   border-radius: 32px;
   padding: 12px 16px;
 }
@@ -191,16 +207,17 @@ const goToDetails = (id: FileId) => {
   width: 100%;
   padding: 14px 40px;
   border-radius: 20px;
-  background: linear-gradient(90deg, var(--color-background-primary), var(--color-black) 100%);
+  background: linear-gradient(90deg, var(--color-background-primary) 0%, var(--color-black) 100%);
   color: var(--color-white);
   font-size: 16px;
   font-weight: 400;
   border: 1px solid var(--color-black);
+  font-family: var(--font-primary), sans-serif;
 }
 .search-bar input::placeholder {
   font-size: 16px;
   font-weight: 400;
-  font-family: 'Kulim Park', sans-serif;
+  font-family: var(--font-primary), sans-serif;
   color: var(--color-placeholder-secondary);
 }
 .search-bar input:focus {
@@ -230,8 +247,12 @@ const goToDetails = (id: FileId) => {
   color: var(--color-white);
   cursor: pointer;
 }
-.input-group button.active {
+.input-group:hover, .input-group button:hover {
   color: var(--color-accent);
+}
+.input-group button.active .icon {
+  color: var(--color-accent);
+  fill: var(--color-accent);
 }
 .input-group span, .input-group label {
   font-size: 16px;
@@ -243,10 +264,19 @@ const goToDetails = (id: FileId) => {
   display: flex;
   flex-direction: column;
   padding: 16px 40px;
-  background: linear-gradient(180deg, var(--color-background-primary), rgba(0, 0, 0, 1) 100%);
+  background: linear-gradient(180deg, var(--color-background-primary) 0%, rgba(0, 0, 0, 1) 100%);
   border-radius: 32px;
   gap: 32px;
   flex: 1;
+}
+.search-results h1 {
+  font-size: 32px;
+  font-weight: 200;
+  color: var(--color-white);
+}
+.search-results h1 span {
+  color: var(--color-accent);
+  font-family: var(--font-btn), sans-serif;
 }
 .search-results .results {
   display: flex;

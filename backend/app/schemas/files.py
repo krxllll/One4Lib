@@ -13,7 +13,7 @@ class FileUploadRequest(BaseModel):
 
 class FileResponse(BaseModel):
     id: str
-    author_id: str
+    author_username: str
     title: str
     description: Optional[str]
     file_type: str

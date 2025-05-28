@@ -8,6 +8,7 @@ from app.models.files import File
 from app.services.points import PointsService
 from app.services.preview import PreviewService
 from app.schemas.files import FileUploadRequest, FileResponse
+from app.models.account import User
 import asyncio
 
 class FileService:
@@ -87,9 +88,12 @@ class FileService:
                 file_url = create_signed_url(doc.file_key)
 
         # 3) повертаємо FileResponse
+        author = await User.get(doc.author_id)
+        username = author.username if author else "unknown"
+
         return FileResponse(
             id=str(doc.id),
-            author_id=str(doc.author_id),
+            author_username=username,  # нове поле
             title=doc.title,
             description=doc.description,
             file_type=doc.file_type,

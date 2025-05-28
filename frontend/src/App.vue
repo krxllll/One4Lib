@@ -8,6 +8,18 @@ const router = useRouter();
 function goBack() {
   router.back();
 }
+
+import { useAuthStore } from '@/stores/auth'
+import { onMounted } from 'vue'
+
+const auth = useAuthStore()
+
+onMounted(async () => {
+  auth.tryAutoLogin()
+  if (auth.accessToken && Date.now() < auth.expiresAt) {
+    await auth.getUserBalance()
+  }
+})
 </script>
 
 <template>

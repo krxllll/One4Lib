@@ -44,9 +44,9 @@ async def lifespan(application: FastAPI):
     client.close()
 
 app = FastAPI(lifespan=lifespan,
-docs_url = "/",
+docs_url = "/api/",
 redoc_url = None,
-openapi_url = "/openapi.json"
+openapi_url = "/api/openapi.json"
 )
 
 # API routes

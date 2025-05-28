@@ -41,6 +41,12 @@ svg {
   color: var(--color-accent);
 }
 
+.btn:disabled {
+  border-color: var(--color-placeholder-secondary);
+  color: var(--color-placeholder-secondary);
+  cursor: not-allowed;
+}
+
 .bg-green {
   background-color: #2d9b73;
 }

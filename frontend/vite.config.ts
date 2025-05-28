@@ -26,12 +26,10 @@ export default defineConfig({
       '/api': {
         target: 'http://backend:8000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/openapi.json': {
         target: 'http://backend:8000/openapi.json',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/openapi.json/, ''),
       },
     },
   },

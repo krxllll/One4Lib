@@ -32,9 +32,24 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/library',
+      name: 'library',
+      component: () => import('../views/LibraryView.vue'),
+    },
+    {
       path: '/upload',
       name: 'upload',
       component: () => import('../views/UploadView.vue'),
+    },
+    {
+      path: '/shop',
+      name: 'shop',
+      component: () => import('../views/ShopView.vue'),
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/ProfileView.vue'),
     },
     {
       path: '/about',
