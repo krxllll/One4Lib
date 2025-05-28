@@ -1,6 +1,44 @@
 <script setup lang="ts">
 import GoogleIcon from "@/components/icons/GoogleIcon.vue";
 import GitHubIcon from "@/components/icons/GitHubIcon.vue";
+import { ref } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
+import { api } from '@/utils/api';
+import { handleApiError } from "@/utils/handleApiError.ts";
+
+const auth = useAuthStore()
+
+const email = ref('')
+const username = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+
+const router = useRouter()
+
+async function handleRegistration() {
+  if (password.value !== confirmPassword.value) {
+    console.error('Passwords do not match')
+    return
+  }
+
+  try {
+    const { data } = await api.post('/auth/register', {
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    })
+
+    console.log('Registration successful:', data)
+    auth.setToken(data)
+    await auth.getUserBalance()
+    await router.push('/search')
+
+  } catch (err) {
+    const message = handleApiError(err, 'Registration failed')
+    console.error('Registration error:', message)
+  }
+}
 </script>
 
 <template>
@@ -13,22 +51,22 @@ import GitHubIcon from "@/components/icons/GitHubIcon.vue";
         <h2>Registration</h2>
       </div>
       <div class="form-box">
-        <form>
+        <form @submit.prevent="handleRegistration">
           <div class="input-group">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Type your email here" required />
+            <input v-model="email" type="email" id="email" name="email" placeholder="Type your email here" required />
           </div>
           <div class="input-group">
             <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Type your username here" required />
+            <input v-model="username" type="text" id="username" name="username" placeholder="Type your username here" required />
           </div>
           <div class="input-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Type your password here" required />
+            <input v-model="password" type="password" id="password" name="password" placeholder="Type your password here" required />
           </div>
           <div class="input-group">
             <label for="confirm-password">Confirm Password</label>
-            <input type="password" id="confirm-password" name="confirm-password" placeholder="Repeat your password here" required />
+            <input v-model="confirmPassword" type="password" id="confirm-password" name="confirm-password" placeholder="Repeat your password here" required />
           </div>
           <button type="submit" class="btn">Register</button>
         </form>
@@ -39,8 +77,8 @@ import GitHubIcon from "@/components/icons/GitHubIcon.vue";
             <hr>
           </div>
           <div class="social-buttons">
-            <router-link to="/" class="google"><GoogleIcon height="38" width="38"/></router-link>
-            <router-link to="/" class="github"><GitHubIcon height="38" width="38"/></router-link>
+            <router-link to="" class="google"><GoogleIcon height="38" width="38"/></router-link>
+            <router-link to="" class="github"><GitHubIcon height="38" width="38"/></router-link>
           </div>
         </div>
       </div>
@@ -84,7 +122,7 @@ import GitHubIcon from "@/components/icons/GitHubIcon.vue";
 }
 .form-box {
   width: 380px;
-  background: linear-gradient(135deg, var(--color-background-primary), var(--color-black) 100%);
+  background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-black) 100%);
   padding: 30px;
   display: flex;
   flex-direction: column;
@@ -113,6 +151,8 @@ form {
   border: 1px solid var(--color-placeholder-primary);
   border-radius: 6px;
   background: transparent;
+  color: var(--color-white);
+  font-family: var(--font-primary), sans-serif;
 }
 .input-group input:focus {
   border-color: var(--color-accent);
