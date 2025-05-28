@@ -2,8 +2,10 @@ import axios from 'axios'
 import { stringify } from 'qs'
 import { useAuthStore } from '@/stores/auth'
 
+const VITE_API_URL='https://backend-ggcq.onrender.com/api'
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://backend-ggcq.onrender.com/api',
   paramsSerializer: params => stringify(params, { arrayFormat: 'repeat' }),
 })
 
