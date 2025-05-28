@@ -130,7 +130,7 @@ async function uploadFile() {
         <FolderIcon height="64" width="64" viewBox="0 0 512 512" class="icon" />
         <p>Drag and drop your file here</p>
         <label class="file-upload btn">
-          <input type="file" accept=".png, .pdf, .mp3" @change="onFileChange" required />
+          <input type="file" accept=".png, .pdf, .mp3" name="file" @change="onFileChange" />
           <span>{{ fileName || 'Choose file' }}</span>
         </label>
       </div>
